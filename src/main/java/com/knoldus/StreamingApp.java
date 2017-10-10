@@ -17,13 +17,24 @@ public class StreamingApp {
         TwitterUtil.setupTwitter();
         JavaStreamingContext streamingContext = StreamingUtil.getStreamingContext();
         JavaReceiverInputDStream<Status> stream = TwitterUtils.createStream(streamingContext);
-        System.out.println("---------------------------------Print the streams --------------------------------");
-        stream.print(10);
+        /*System.out.println("---------------------------------Print the streams --------------------------------");
+        stream.print(10);*/
 
         System.out.println("---------------------------------Print HashTagStreams -----------------------------");
         JavaDStream<HashtagEntity> hashTagStream = stream.flatMap(status -> Arrays.asList(status.getHashtagEntities()));
+//        hashTagStream.filter()
         hashTagStream.print();
 
+        System.out.println("---------------------------------Print FilteredStreams -----------------------------");
+        JavaDStream<Status> filteredStream = stream.filter(dataStream ->
+                dataStream.getText().toLowerCase().contains("#bigdata") ||
+                        dataStream.getText().toLowerCase().contains("#hadoop") ||
+                        dataStream.getText().toLowerCase().contains("#lagom") ||
+                        dataStream.getText().toLowerCase().contains("#akka") ||
+                        dataStream.getText().toLowerCase().contains("#microservice") ||
+                        dataStream.getText().toLowerCase().contains("#analytics") ||
+                        dataStream.getText().toLowerCase().contains("#spark"));
+        filteredStream.print();
         streamingContext.start();
         streamingContext.awaitTermination();
     }

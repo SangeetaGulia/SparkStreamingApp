@@ -8,7 +8,6 @@ import com.typesafe.config.ConfigFactory;
     static Config conf = ConfigFactory.load();
 
     public static String getTwitterConsumerKey() {
-        System.out.println(conf.getString("twitter.consumerKey"));
         return conf.getString("twitter.consumerKey");
     }
 
