@@ -10,31 +10,50 @@ import twitter4j.HashtagEntity;
 import twitter4j.Status;
 
 import java.util.Arrays;
+import java.util.Date;
 
 public class StreamingApp {
+
+    private static void saveTrendingTweets(JavaReceiverInputDStream<Status> stream) {
+        JavaDStream<HashtagEntity> tagStream = stream.flatMap(status -> {
+            status.getText().replaceAll("[^a-z A-Z1-9]+", "");
+            System.out.println(Arrays.asList(status.getHashtagEntities()));
+            return Arrays.asList(status.getHashtagEntities());
+        });
+
+        tagStream.countByValue().foreachRDD(rdd -> {
+            Date now = new Date();
+            rdd.sortByKey().saveAsTextFile("./target/tagdata"+now);
+            return null;
+        });
+    }
 
     public static void main(String[] args) {
         TwitterUtil.setupTwitter();
         JavaStreamingContext streamingContext = StreamingUtil.getStreamingContext();
         JavaReceiverInputDStream<Status> stream = TwitterUtils.createStream(streamingContext);
-        /*System.out.println("---------------------------------Print the streams --------------------------------");
-        stream.print(10);*/
 
-        System.out.println("---------------------------------Print HashTagStreams -----------------------------");
-        JavaDStream<HashtagEntity> hashTagStream = stream.flatMap(status -> Arrays.asList(status.getHashtagEntities()));
-//        hashTagStream.filter()
-        hashTagStream.print();
+        saveTrendingTweets(stream);
 
-        System.out.println("---------------------------------Print FilteredStreams -----------------------------");
+        /*System.out.println("---------------------------------Print FilteredStreams -----------------------------");
         JavaDStream<Status> filteredStream = stream.filter(dataStream ->
                 dataStream.getText().toLowerCase().contains("#bigdata") ||
-                        dataStream.getText().toLowerCase().contains("#hadoop") ||
-                        dataStream.getText().toLowerCase().contains("#lagom") ||
-                        dataStream.getText().toLowerCase().contains("#akka") ||
+                        dataStream.getText().toLowerCase().contains("#Hadoop") ||
+                        dataStream.getText().toLowerCase().contains("#Lagom") ||
+                        dataStream.getText().toLowerCase().contains("#Akka") ||
                         dataStream.getText().toLowerCase().contains("#microservice") ||
                         dataStream.getText().toLowerCase().contains("#analytics") ||
-                        dataStream.getText().toLowerCase().contains("#spark"));
-        filteredStream.print();
+                        dataStream.getText().toLowerCase().contains("#Scala") ||
+                        dataStream.getText().toLowerCase().contains("#Java9") ||
+                        dataStream.getText().toLowerCase().contains("#MakeInIndia") ||
+                        dataStream.getText().toLowerCase().contains("#DigitalIndia") ||
+                        dataStream.getText().toLowerCase().contains("#BREAKING") ||
+                        dataStream.getText().toLowerCase().contains("#IndianArmy") ||
+                        dataStream.getText().toLowerCase().contains("#Reactive") ||
+                        dataStream.getText().toLowerCase().contains("#Bachchan") ||
+                        dataStream.getText().toLowerCase().contains("#Spark"));
+        filteredStream.print();*/
+
         streamingContext.start();
         streamingContext.awaitTermination();
     }
